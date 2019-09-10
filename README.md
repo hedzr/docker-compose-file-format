@@ -8,9 +8,17 @@
 
 这篇文章基本上是 docker-compose YAML 文件格式的严格的英译中。这么做，缘起于昨天想起扫描一下 docker-compose 编排中怎么使用 `${PWD}` 的问题，结果中文没有一点帮助，还是官网最终解决了我的模糊之处。因此我觉得还是应该做一篇比较严谨的译文以及说明，来阐释 docker-compose 编排的各项细节<!--，而不是素来很多人擅长的那些个做法，什么以讹传讹啦，你抄我我抄你啦，或者摘取两个片段就开始捞人气的那些个做法-->。
 
-以下，我们主要是介绍 docker-compose 编排文件格式版本3的各项细节。
+以下，我们主要是介绍 [docker-compose 编排文件格式版本3](https://docs.docker.com/compose/compose-file/) 的各项细节。
 
 阅读本文，你应该有 docker-compose 的基本认识，至少有基本的早期（版本2）编排格式的了解。
+
+### 关于授权
+
+译文从属于原文 https://docs.docker.com/compose/compose-file/ 。
+
+[译文 https://github.com/hedzr/docker-compose-file-format](https://github.com/hedzr/docker-compose-file-format) 本身以 MIT 方式分发。
+
+
 
 
 
