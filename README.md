@@ -2439,7 +2439,8 @@ volumes:
 
 ## 结束
 
-
+- 原文：https://docs.docker.com/compose/compose-file/ 。
+- 译文：[https://github.com/hedzr/docker-compose-file-format](https://github.com/hedzr/docker-compose-file-format)。
 
 
 
