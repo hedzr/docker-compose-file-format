@@ -861,7 +861,7 @@ services:
 
 - `parallelism`：同时更新的容器的数量值。如果设置为0，所有容器将被同时回滚。
 - `delay`: 每个容器组被更新前的等待时长（默认为0）
-- `failure_action`: 一个更新失败时应当执行的动作。可以是 `continue` 或 `pause`（默认为`pause`）
+- `failure_action`: 一个更新失败时应当执行的动作。可以是 `continue`, `rollback` 或 `pause`（默认为`pause`）
 - `monitor`: 失败的更新状态被更新到监视器的周期（`ns|us|ms|s|m|h`）默认为 `0s`。
 - `max_failure_ratio`: 更新时失败的可容忍的比例（默认为0）
 - `order`: 更新的操作顺序。可以为 `stop-first` 或 `start-first`（默认为 `stop-first`）
