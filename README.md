@@ -25,9 +25,17 @@
 * [docker\-compose 编排指南 (v3\.7)](#docker-compose-%E7%BC%96%E6%8E%92%E6%8C%87%E5%8D%97-v37)
   * [缘起](#%E7%BC%98%E8%B5%B7)
     * [关于授权](#%E5%85%B3%E4%BA%8E%E6%8E%88%E6%9D%83)
+  * [Table of Contents](#table-of-contents)
   * [编排格式版本3](#%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E7%89%88%E6%9C%AC3)
     * [历史](#%E5%8E%86%E5%8F%B2)
+  * [特别添加](#%E7%89%B9%E5%88%AB%E6%B7%BB%E5%8A%A0)
     * [编排文件结构与示例](#%E7%BC%96%E6%8E%92%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A4%BA%E4%BE%8B)
+    * [[Dockerfile] 关于 ENTRYPOINT 和 CMD](#dockerfile-%E5%85%B3%E4%BA%8E-entrypoint-%E5%92%8C-cmd)
+      * [<a href="https://goinbigdata\.com/docker\-run\-vs\-cmd\-vs\-entrypoint/" rel="nofollow"><strong>Docker RUN vs CMD vs ENTRYPOINT \- Go in Big Data</strong></a>](#docker-run-vs-cmd-vs-entrypoint---go-in-big-data)
+        * [In a nutshell](#in-a-nutshell)
+      * [典型用法](#%E5%85%B8%E5%9E%8B%E7%94%A8%E6%B3%95)
+      * [用于你的容器](#%E7%94%A8%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%AE%B9%E5%99%A8)
+    * [[Dockerfile] 多遍构建](#dockerfile-%E5%A4%9A%E9%81%8D%E6%9E%84%E5%BB%BA)
   * [编排格式手册 \- service](#%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---service)
     * [build](#build)
       * [context](#context)
@@ -130,6 +138,11 @@
   * [Compose 文档参考](#compose-%E6%96%87%E6%A1%A3%E5%8F%82%E8%80%83)
   * [结束](#%E7%BB%93%E6%9D%9F)
 
+<!-- Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc.go) -->
+
+
+
+
 
 ## 编排格式版本3
 
@@ -157,6 +170,8 @@
 | 1.0                     | 1.9.1.+                   |
 
 
+
+## 特别添加
 
 ### 编排文件结构与示例
 
@@ -269,6 +284,98 @@ volumes:
 
 
 
+### [Dockerfile] 关于 `ENTRYPOINT` 和 `CMD`
+
+
+
+#### [**Docker RUN vs CMD vs ENTRYPOINT - Go in Big Data**](https://goinbigdata.com/docker-run-vs-cmd-vs-entrypoint/)
+
+##### In a nutshell
+
+- RUN executes command(s) in a new layer and creates a new image. E.g., it is often used for installing software packages.
+- CMD sets default command and/or parameters, which can be overwritten from command line when docker container runs.
+- ENTRYPOINT configures a container that will run as an executable.
+
+在 Dockerfile 中讨论这三条命令：
+
+首先，`RUN` 不考虑，其用途可以被视作执行一条Shell指令。
+
+`CMD` 和 `ENTRYPOING` 相似但实际上区别较大：`CMD` 指定默认命令及其命令行参数、或者命令行参数的结尾的部分，并且能够在启动容器时被覆盖（通过外部命令行指定的方式），`ENTRYPOINT` 指定该容器被运行时的启动命令，可以附带命令行参数，这条命令在被实际执行时还会附加 `CMD` 所指定的内容作为其命令行的结尾部分。
+
+
+
+#### 典型用法
+
+所以一个惯用法是：
+
+```dockerfile
+ENTRYPOINT ["/bin/echo", "Hello"]
+CMD ["world"]
+```
+
+然后执行该容器的效果类似于：
+
+```bash
+$ docker run -it test-container
+Hello world
+$ docker run -it test-container David
+Hello David
+```
+
+
+
+#### 用于你的容器
+
+所以对于自定义容器来说，你的主要应用程序的路径可以被用作 `ENTRYPOINT` 而在 `CMD` 中提供默认参数：
+
+```dockerfile
+ENTRYPOINT ["/usr/local/app/my-app"]
+CMD ["--help"]
+```
+
+这将会包装你的 my-app 像一个外露的工具，默认时显示其帮助屏，你可以指定参数去运行 my-app：
+
+```bash
+$ docker run -it my-app-container
+[... help screen here ...]
+$ docker run -it my-app-container server run --foreground
+[ 等同于执行 my-app server run --foreground ]
+```
+
+END
+
+
+
+
+
+### [Dockerfile] 多遍构建
+
+
+
+多遍构建被典型地用于CI/CD。
+
+例如步骤0可以被命名为 `builder`，负责从源码编译到目标文件，而步骤1则从步骤0中抽出目标文件用于部署打包，并生成最终的容器镜像，随后步骤0的中间层则被抛弃（仅指不被打包在结果容器中，实际上这些中间层在 Docker 的构建缓存中仍然是存在且可以被重用的），这些中间层不会出现在最终容器镜像中，从而有效地缩减了最终容器镜像的尺寸，而这个结果也是从语义上、从逻辑上被自洽的。
+
+```yaml
+FROM golang:1.7.3 AS builder
+WORKDIR /go/src/github.com/alexellis/href-counter/
+RUN go get -d -v golang.org/x/net/html  
+COPY app.go    .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+
+FROM alpine:latest  
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /go/src/github.com/alexellis/href-counter/app .
+CMD ["./app"]  
+```
+
+
+
+
+
+
+
 ## 编排格式手册 - `service`
 
 接下来会是一个参考手册应有的章节结构，我们按照字母顺序列列举出了服务编排的指令，例如 `ports`，`volumes`，`cmd`，`entry` 等等。
@@ -312,6 +419,10 @@ services:
 
 上面这个例子，会找到 `./dir` 文件夹中的构建上下文（默认是寻找到 `Dockerfile`）并完成构建，最后将其标记为 `company/webapp` 的名字，以及 `v1.1.9` 的 Tag。
 
+> **NOTE** 当用在docker stack部署场景时：
+>
+> `build` 选项会被忽略。
+
 
 
 #### `context`
@@ -321,6 +432,11 @@ services:
 如果指定了一个相对路径，那么这个路径是相对于 `docker-compose.yml` 文件的。这个路径也会被传送给 Docker daemon 用于进行构建。
 
 docker-compose 发动构建动作和标记构建结果（按照`image`名字），在那之后按照对应的名字使用它。
+
+```yaml
+build:
+  context: ./dir
+```
 
 
 
@@ -380,7 +496,7 @@ build:
 >
 > 在 [Understand how ARGS and FROM interact](https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact) 中有更详细的相关讨论。
 
-你可以略过指定构建参数。此时，该参数的实际值取决于构建时运行环境。
+你可以略过显式指定构建参数。此时，该参数的实际值取决于构建时运行环境。
 
 ```yaml
   args:
@@ -465,26 +581,6 @@ build:
   target: prod
 ```
 
-> 多遍构建被典型地用于CI/CD。
->
-> 例如步骤0可以被命名为 `builder`，负责从源码编译到目标文件，而步骤1则从步骤0中抽出目标文件用于部署打包，并生成最终的容器镜像，随后步骤0的中间层则被抛弃，这些中间层不会出现在最终容器镜像中，从而有效地缩减了最终容器镜像的尺寸，而这个结果也是从语义上、从逻辑上被自洽的。
->
-> ```yaml
-> FROM golang:1.7.3 AS builder
-> WORKDIR /go/src/github.com/alexellis/href-counter/
-> RUN go get -d -v golang.org/x/net/html  
-> COPY app.go    .
-> RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
-> 
-> FROM alpine:latest  
-> RUN apk --no-cache add ca-certificates
-> WORKDIR /root/
-> COPY --from=builder /go/src/github.com/alexellis/href-counter/app .
-> CMD ["./app"]  
-> ```
->
-> 
-
 
 
 ### `cap_add`, `cap_drop`
@@ -530,7 +626,7 @@ cgroup_parent: m-executor-abcd
 command: bundle exec thin -p 3000
 ```
 
-`command` 也可以被指定为一个列表。实际上这也是更被推荐的方式，无歧义而且安全，而且和 [dockerfile 中的格式具有统一性：
+`command` 也可以被指定为一个列表。实际上这也是更被推荐的方式，无歧义而且安全，而且和 dockerfile 中的格式具有一致性：
 
 ```yaml
 command: ["bundle", "exec", "thin", "-p", "3000"]
