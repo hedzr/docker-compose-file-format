@@ -1,6 +1,4 @@
-# docker-compose 编排指南 (v3.8)
-
-
+# docker-compose 编排指南 (v3.7)
 
 
 
@@ -8,7 +6,7 @@
 
 关于 docker-compose 的安装，关于 docker 的基本介绍，不在本文的指导范围内。
 
-这篇文章基本上是 docker-compose YAML 文件格式的严格的英译中。这么做，缘起于昨天想起扫描一下 docker-compose 编排中怎么使用 `${PWD}` 的问题，结果中文没有一点帮助，还是官网最终解决了我的模糊之处。因此我觉得还是应该做一篇比较严谨的译文以及说明，来阐释 docker-compose 编排的各项细节。
+这篇文章基本上是 docker-compose YAML 文件格式的严格的英译中。这么做，缘起于昨天想起扫描一下 docker-compose 编排中怎么使用 `${PWD}` 的问题，结果中文没有一点帮助，还是官网最终解决了我的模糊之处。因此我觉得还是应该做一篇比较严谨的译文以及说明，来阐释 docker-compose 编排的各项细节<!--，而不是素来很多人擅长的那些个做法，什么以讹传讹啦，你抄我我抄你啦，或者摘取两个片段就开始捞人气的那些个做法-->。
 
 以下，我们主要是介绍 [docker-compose 编排文件格式版本3](https://docs.docker.com/compose/compose-file/) 的各项细节。
 
@@ -16,26 +14,17 @@
 
 ### 关于授权
 
-译文从属于原文 <https://docs.docker.com/compose/compose-file/>。
+译文从属于原文 https://docs.docker.com/compose/compose-file/ 。
 
-[译文 https://github.com/hedzr/docker-compose-file-format](https://github.com/hedzr/docker-compose-file-format) 本身以 MIT 方式（忽略 hedzr.github.io 站台级许可申明，遵循 repo 本身的申明）分发。
-
-
-
-### v3.8 说明
-
-上一次我做了一个旧的译文：[docker-compose 编排指南 (v3.7)](../docker-compose-file-format/)。这是基于 v3.7 的。今次的译文是对其的一个更新。不得不说，这种查漏补缺挺烦人的。
-
-
+[译文 https://github.com/hedzr/docker-compose-file-format](https://github.com/hedzr/docker-compose-file-format) 本身以 MIT 方式分发。
 
 
 
 ## Table of Contents
 
-* [docker\-compose 编排指南 (v3\.8)](#docker-compose-%E7%BC%96%E6%8E%92%E6%8C%87%E5%8D%97-v38)
+* [docker\-compose 编排指南 (v3\.7)](#docker-compose-%E7%BC%96%E6%8E%92%E6%8C%87%E5%8D%97-v37)
   * [缘起](#%E7%BC%98%E8%B5%B7)
     * [关于授权](#%E5%85%B3%E4%BA%8E%E6%8E%88%E6%9D%83)
-    * [v3\.8 说明](#v38-%E8%AF%B4%E6%98%8E)
   * [Table of Contents](#table-of-contents)
   * [编排格式版本3](#%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E7%89%88%E6%9C%AC3)
     * [历史](#%E5%8E%86%E5%8F%B2)
@@ -47,14 +36,13 @@
       * [典型用法](#%E5%85%B8%E5%9E%8B%E7%94%A8%E6%B3%95)
       * [用于你的容器](#%E7%94%A8%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%AE%B9%E5%99%A8)
     * [[Dockerfile] 多遍构建](#dockerfile-%E5%A4%9A%E9%81%8D%E6%9E%84%E5%BB%BA)
-  * [编排格式手册 \- service 配置参考](#%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---service-%E9%85%8D%E7%BD%AE%E5%8F%82%E8%80%83)
+  * [编排格式手册 \- service](#%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---service)
     * [build](#build)
       * [context](#context)
       * [dockerfile](#dockerfile)
       * [args](#args)
       * [cache\_from](#cache_from)
       * [labels](#labels)
-      * [network](#network)
       * [shm\_size](#shm_size)
       * [target](#target)
     * [cap\_add, cap\_drop](#cap_add-cap_drop)
@@ -72,14 +60,13 @@
       * [labels](#labels-1)
       * [mode](#mode)
       * [placement](#placement)
-      * [max\_replicas\_per\_node](#max_replicas_per_node)
       * [replicas](#replicas)
       * [resources](#resources)
         * [Out Of Memory Exceptions (OOME)](#out-of-memory-exceptions-oome)
       * [restart\_policy](#restart_policy)
       * [rollback\_config](#rollback_config)
       * [update\_config](#update_config)
-      * [DOCKER STACK DEPLOY 不支持者](#docker-stack-deploy-%E4%B8%8D%E6%94%AF%E6%8C%81%E8%80%85)
+      * [NOT SUPPORTED FOR DOCKER STACK DEPLOY](#not-supported-for-docker-stack-deploy)
     * [devices](#devices)
     * [dns](#dns)
     * [dns\_search](#dns_search)
@@ -102,7 +89,7 @@
       * [IPV4\_ADDRESS, IPV6\_ADDRESS](#ipv4_address-ipv6_address)
     * [pid](#pid)
     * [ports](#ports)
-      * [短格式](#%E7%9F%AD%E6%A0%BC%E5%BC%8F-1)
+    * [短格式](#%E7%9F%AD%E6%A0%BC%E5%BC%8F-1)
       * [长格式](#%E9%95%BF%E6%A0%BC%E5%BC%8F-1)
     * [restart](#restart)
     * [secrets](#secrets)
@@ -133,7 +120,7 @@
     * [driver](#driver-1)
       * [bridge](#bridge)
       * [overlay](#overlay)
-      * [host 或 none](#host-%E6%88%96-none)
+      * [host or none](#host-or-none)
     * [driver\_opts](#driver_opts-1)
     * [attachable](#attachable)
     * [enable\_ipv6](#enable_ipv6)
@@ -153,6 +140,8 @@
 
 <!-- Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc.go) -->
 
+
+
 
 
 ## 编排格式版本3
@@ -165,7 +154,6 @@
 
 | **Compose file format** | **Docker Engine release** |
 | :---------------------- | :------------------------ |
-| 3.8                     | 19.03.0+                  |
 | 3.7                     | 18.06.0+                  |
 | 3.6                     | 18.02.0+                  |
 | 3.5                     | 17.12.0+                  |
@@ -190,7 +178,7 @@
 这是一个版本3+的典型文件结构样本：
 
 ```yaml
-version: "3.7" # 适用于 v3.8 没问题
+version: "3.7"
 services:
 
   redis:
@@ -388,21 +376,11 @@ CMD ["./app"]
 
 
 
-## 编排格式手册 - `service` 配置参考
+## 编排格式手册 - `service`
 
-> 接下来会是一个参考手册应有的章节结构，我们按照字母顺序列列举出了服务编排的指令，例如 `ports`，`volumes`，`cmd`，`entry` 等等。
+接下来会是一个参考手册应有的章节结构，我们按照字母顺序列列举出了服务编排的指令，例如 `ports`，`volumes`，`cmd`，`entry` 等等。
 
 
-
-Compose 文件是一个 YAML格式的文本文件，其中定义了 service、networks 以及 volumes。缺省时 docker-compose 使用和检索 `./docker-compose.yml` 文件并解释之。
-
-> **Tip**: 你总是可以使用 `.yml` 或 `.yaml` 作为该脚本文件的后缀，它们都会正确工作。
-
-service （服务）的配置包含若干定义，它们指明了如何将一个容器运行为服务，这些定义实际上会被传递给 `docker run` 作为其命令行参数的一部分。同样的道理，networks、volumes 等等的定义也采用同样的原理去影响诸如 `docker network create`，或者 `docker volume create` 等命令的实际运行。
-
-你可以使用在配置定义值中使用环境变量，它们有类似于 BASH 变量替代的语法，你可以以 `${VARIABLE}`，请参阅 [变量替换](#变量替换) 小节的深入探讨。
-
-接下来本章节中列举所有有效的服务配置项。
 
 ### `build`
 
@@ -411,7 +389,7 @@ service （服务）的配置包含若干定义，它们指明了如何将一个
 `build` 可以是一个指向构建上下文的路径字符串，例如：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   webapp:
     build: ./dir
@@ -420,7 +398,7 @@ services:
 也可以是一个更详细的定义。这包括了 `context` 项所指定的路径，以及可选的 `dockerfile` 文件和构建参数 `args`：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   webapp:
     build:
@@ -573,31 +551,6 @@ build:
 
 
 
-#### `network`
-
-> Since v3.4
-
-设置在 `RUN` 构建过程中要链接的网络，该网络也将被用于查询和提取依赖的容器。
-
-```yaml
-build:
-  context: .
-  network: host
-build:
-  context: .
-  network: custom_network_1
-```
-
-设为 `none` 则在构建时禁用网络查询和提取：
-
-```yaml
-build:
-  context: .
-  network: none
-```
-
-
-
 #### `shm_size`
 
 > since v3.5
@@ -696,7 +649,7 @@ command: ["bundle", "exec", "thin", "-p", "3000"]
 只指定配置名。容器因此可以访问配置 `/<config_name` 和挂载它（挂载的源和目标均为该配置名）。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   redis:
     image: redis:latest
@@ -739,7 +692,7 @@ configs:
 下面的例子类似于短格式的例子：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   redis:
     image: redis:latest
@@ -844,7 +797,7 @@ configs:
 简单的示例如下：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   web:
     build: .
@@ -880,7 +833,7 @@ services:
 在 `docker-compose up` 和 `docker-compose run` 时被忽略。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   redis:
     image: redis:alpine
@@ -899,9 +852,7 @@ services:
 
  swarm.
 
-> Since **[Version 3.2](https://docs.docker.com/compose/compose-file/compose-versioning/#version-3).**
-
-指定外部客户端连接到一个 swarm 集群时使用的服务发现方法。
+> **[Version 3.3](https://docs.docker.com/compose/compose-file/compose-versioning/#version-3) only.**
 
 - `endpoint_mode: vip` - Docker 为服务请求一个虚拟IP（`VIP`）用于访问。
 
@@ -912,7 +863,7 @@ services:
 - `endpoint_mode: dnsrr` - 使用 DNS round-robin (DNSRR) 算法进行服务发现。Docker会为服务设置一个DNS条目，因而在进行对应的 DNS 解析时通过服务名称会返回一个IP地址清单。客户端因此直接选择一个具体的端点进行访问。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 
 services:
   wordpress:
@@ -955,7 +906,7 @@ networks:
 为服务指定标签。这些标签只被作用于对应的服务，而不是被应用到服务的容器或者容器实例上。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   web:
     image: web
@@ -967,7 +918,7 @@ services:
 要为容器设置标签的话，在 `deploy` 之外为服务指定 `labels`：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   web:
     image: web
@@ -984,7 +935,7 @@ services:
 参阅 [swarm](https://docs.docker.com/engine/swarm/) 主题下的 [Replicated and global services](https://docs.docker.com/engine/swarm/how-swarm-mode-works/services/#replicated-and-global-services)。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   worker:
     image: dockersamples/examplevotingapp_worker
@@ -1001,7 +952,7 @@ services:
 参阅docker服务建立的相关文档以了解更多的关于 [constraints](https://docs.docker.com/engine/reference/commandline/service_create/#specify-service-constraints-constraint) 和 [preferences 的相关信息，包括相应的语法，可用的类型等等的完整描述。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   db:
     image: postgres
@@ -1012,31 +963,6 @@ services:
           - engine.labels.operatingsystem == ubuntu 14.04
         preferences:
           - spread: node.labels.zone
-```
-
-
-
-#### `max_replicas_per_node`
-
-> Since [version 3.8](https://docs.docker.com/compose/compose-file/compose-versioning/#version-38).
-
-如果一个服务是可副本的 `replicated` (这是默认的), max_replicas_per_node 将会 [限制副本数量（limit the number of replicas）](https://docs.docker.com/engine/reference/commandline/service_create/#specify-maximum-replicas-per-node---replicas-max-per-node) 。
-
-当太多任务申请新的任务节点且超出了 max_replicas_per_node 限制值时，一个 `no suitable node (max replicas per node limit exceed)` 错误将会被抛出。
-
-```yaml
-version: "3.8"
-services:
-  worker:
-    image: dockersamples/examplevotingapp_worker
-    networks:
-      - frontend
-      - backend
-    deploy:
-      mode: replicated
-      replicas: 6
-      placement:
-        max_replicas_per_node: 1
 ```
 
 
@@ -1073,7 +999,7 @@ services:
 在如下的例子中，`redis` 服务被约束为不可使用超出50M的内存，单核50%的CPU使用率，同时也保留 20M 内存以及 25%的CPU使用率作为基准值。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   redis:
     image: redis:alpine
@@ -1095,8 +1021,6 @@ services:
 
 要防止这样的情况发生，请确定你的应用程序合法有效地使用内存。对于这样的风险，查阅 [Understand the risks of running out of memory](https://docs.docker.com/engine/admin/resource_constraints/#understand-the-risks-of-running-out-of-memory) 以获知进一步的评估须知。
 
-
-
 #### `restart_policy`
 
 指示当容器实例退出时，如何重启。替换 `restart`：
@@ -1107,7 +1031,7 @@ services:
 - `window`: 要确定一次重启是否成功，需要等候的时长。默认为无等待立即认定为已成功。应该为其指定一个 [duration](https://docs.docker.com/compose/compose-file/#specifying-durations)。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   redis:
     image: redis:alpine
@@ -1150,7 +1074,7 @@ services:
 > **NOTE**：`order` 只在 v3.4 及之后有效。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   vote:
     image: dockersamples/examplevotingapp_vote:before
@@ -1166,7 +1090,7 @@ services:
 
 
 
-#### `DOCKER STACK DEPLOY` 不支持者
+#### NOT SUPPORTED FOR `DOCKER STACK DEPLOY`
 
 下列的子选项（为 `docker-compose up` 和 `docker-compose run` 所支持）是在 `docker stack deploy` 中不被支持的：
 
@@ -1180,9 +1104,10 @@ services:
 - [network_mode](https://docs.docker.com/compose/compose-file/#network_mode)
 - [restart](https://docs.docker.com/compose/compose-file/#restart)
 - [security_opt](https://docs.docker.com/compose/compose-file/#security_opt)
+- [sysctls](https://docs.docker.com/compose/compose-file/#sysctls)
 - [userns_mode](https://docs.docker.com/compose/compose-file/#userns_mode)
 
-> **Tip:** 请参阅 [如何为 service 服务模式和 swarm 集群模式使用卷而配置 docker-stack.yml 文件 - how to configure volumes for services, swarms, and docker-stack.yml files](https://docs.docker.com/compose/compose-file/#volumes-for-services-swarms-and-stack-files) 章节。 Volumes（卷）在 swarms 模式和 services 模式中*是*被支持的，但你只能采用命名卷，又或是与受约束于有权访问*必需*卷的节点的服务关联.
+> **Tip:** See the section on [how to configure volumes for services, swarms, and docker-stack.yml files](https://docs.docker.com/compose/compose-file/#volumes-for-services-swarms-and-stack-files). Volumes *are* supported but to work with swarms and services, they must be configured as named volumes or associated with services that are constrained to nodes with access to the requisite volumes.
 
 ### `devices`
 
@@ -1276,35 +1201,7 @@ RACK_ENV=development
 
 `VAL` 的值被原样照用，且不能被修改。例如如果值由引号所包围，那么值的表示量中也包含引号。
 
-*环境变量文件的顺序也需要被注意*。位置靠后的环境变量文件中所定义的变量值会覆盖掉早前定义的旧值。
-
-> **按**：原文竟然说了这么多！
->
-> Keep in mind that *the order of files in the list is significant in determining the value assigned to a variable that shows up more than once*. The files in the list are processed from the top down. For the same variable specified in file `a.env` and assigned a different value in file `b.env`, if `b.env` is listed below (after), then the value from `b.env` stands. For example, given the following declaration in `docker-compose.yml`:
-
-```
-services:
-  some-service:
-    env_file:
-      - a.env
-      - b.env
-```
-
-And the following files:
-
-```
-# a.env
-VAR=1
-```
-
-and
-
-```
-# b.env
-VAR=hello
-```
-
-`$VAR` is `hello`.
+环境变量文件的顺序也需要被注意。位置靠后的环境变量文件中所定义的变量值会覆盖掉早前定义的旧值。
 
 
 
@@ -1319,8 +1216,6 @@ environment:
   RACK_ENV: development
   SHOW: 'true'
   SESSION_SECRET:
-
-# 或
 environment:
   - RACK_ENV=development
   - SHOW=true
@@ -1356,10 +1251,6 @@ external_links:
  - project_db_1:postgresql
 ```
 
-> **Note**
->
-> 在 docker-compose.yml 之外建立的容器（The externally-created containers）必须至少连接到一个相同的网络，才能与一个定义在 docker-compose.yml 中的服务相链接 。[Links](https://docs.docker.com/compose/compose-file/compose-file-v2#links) 选项已经过时了，我们推荐使用 [networks](https://docs.docker.com/compose/compose-file/#networks) 来代替它。
-
 > **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。
 >
 > 也参阅  [deploying a stack in swarm mode](https://docs.docker.com/engine/reference/commandline/stack_deploy/) 。
@@ -1376,13 +1267,6 @@ external_links:
 extra_hosts:
  - "somehost:162.242.195.82"
  - "otherhost:50.31.209.229"
-```
-
-对于这个服务来说，在容器中的 `/etc/hosts` 文件中，相应的主机名及其IP将被建立为一个条目。例如：
-
-```
-162.242.195.82  somehost
-50.31.209.229   otherhost
 ```
 
 
@@ -1452,7 +1336,7 @@ image: a4bc65fd
 在容器中运行一个 init 进程并转发信号。设置为 `true` 为服务使能这个特性。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   web:
     image: alpine:latest
@@ -1491,8 +1375,6 @@ labels:
 ### `links`
 
 > 已经是一个遗留特征了。在不久的未来将被移除。
->
-> 按：所以我也不精确翻译了:) 太啰嗦了。
 
 链接另一个服务到本容器。可以同时制定服务名称和链接别名（`SERVICE:ALIAS`），也可以略过链接别名。
 
@@ -1523,19 +1405,13 @@ logging:
     syslog-address: "tcp://192.168.0.42:123"
 ```
 
-`driver` 指定了驱动名称，这和 `--log-driver` 是等效的。
-
-缺省值为 `json-file`。
+`driver` 指定了驱动名称，这和 `--log-driver` 是等效的。缺省值为 `json-file`。
 
 ```yaml
 driver: "json-file"
 driver: "syslog"
 driver: "none"
 ```
-
-> **Note**
->
-> 使用 `docker-compose up` 和 `docker-compose logs` 检索日志时，只有  `json-file` 和 `journald` 驱动格式的日志才能被打印到控制台，其他日志驱动程序会将日志转发到对应的目的地，本地将不会检索到任何日志输出信息。
 
 可用的转发驱动器可以参考 https://docs.docker.com/config/containers/logging/configure/。
 
@@ -1550,17 +1426,7 @@ options:
 缺省的日志转发驱动为 `json-file`。对此可以指定日志切割尺寸以及最多保持的日志历史文件个数：
 
 ```yaml
-options:
-  max-size: "200k"
-  max-file: "10"
-```
-
-上面显示的这个例子中，日志的文件存储将被限制为 200kB，并且在超出时会被截断到旧历史日志，这样的历史文件将被限制为不超过 10 个，更旧的历史文件将被抛弃。
-
-这里有一个完整的 `docker-compose.yml` 文件实例，演示了如何限制日志存储空间：
-
-```yaml
-version: "3.8"
+version: "3.7"
 services:
   some-service:
     image: some-service
@@ -1570,10 +1436,6 @@ services:
         max-size: "200k"
         max-file: "10"
 ```
-
-> 有效可用的日志选项有赖于具体使用的日志驱动程序。
->
-> 上面的控制日志文件个数及其大小的日志选项，适用于 [json-file driver](https://docs.docker.com/config/containers/logging/json-file/)。它们可能并不适用于别的日志驱动程序。要了解完整的针对每个日志驱动程序可用的日志选项，请查阅 [logging drivers](https://docs.docker.com/config/containers/logging/configure/) 文档。
 
 
 
@@ -1611,19 +1473,11 @@ services:
      - other-network
 ```
 
-
-
 #### ALIASES
 
 指定网络中该服务的别名（也即主机名）。相同网络中别的容器可以使用服务名或者服务别名来连接到该服务的容器实例。
 
-既然 `aliases` 是网络范围（网络域）内的，同一个服务在不同网络中可以有不同的别名。
-
-> **Note**
->
-> 一个网络域别名，可以被多个容器、甚至是多个服务所共享——你可以在不同容器、不同服务之间使用重名的别名。如果你这么做了，别名会被解决为哪个确定的容器是无法保证的。
-
-别名定义的格式如同这样：
+既然 `aliases` 是网络范围内的，同一个服务在不同网络中可以有不同的别名。
 
 ```yaml
 services:
@@ -1638,10 +1492,10 @@ services:
          - alias2
 ```
 
-一个更复杂而完整的例子：下面提供了三个服务：``web`, `worker`, 和 `db`，分别属于两个网络：`new` 和 `legacy`。通过 `new` 网络中的主机名 `db` 或 `database` 来访问，或者 `legacy` 网络的主机名 `db` 或 `mysql`，都可以访问到 `db` 服务。
+一个更复杂而完整的例子：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 
 services:
   web:
@@ -1680,7 +1534,7 @@ networks:
 一个例子是：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 
 services:
   app:
@@ -1717,13 +1571,9 @@ pid: "host"
 
 > **Note**: 端口暴露功能和 `network_mode: host` 不能兼容。
 
-#### 短格式
+### 短格式
 
 可以同时指定宿主机和容器端口 (`HOST:CONTAINER`) 以完成映射，也可以仅指定容器端口以自动映射为~~相同的主机端口~~一个临时端口（从32768开始）。
-
-> **Note**
->
-> 当采用 `HOST:CONTAINER` 格式来映射端口时，如果使用的容器端口小于60的话，你可能会**接受**到一个错误。这是因为 YAML 解析器将格式 `xx:yy` 视为一个 60 进制的数值。这挺荒谬的，是不是？由于这个原因，我们不得不推荐你在端口号这里总是使用引号做包围，令其成为一个 string 值，以免收到不如预期的反应。
 
 ```yaml
 ports:
@@ -1740,11 +1590,6 @@ ports:
 #### 长格式
 
 允许进行冗长的定义：
-
-- `target`: 指定容器内的端口号
-- `published`: 指定暴露给 docker 宿主机的端口号
-- `protocol`: 协议 (`tcp` or `udp`)
-- `mode`: `host` 表示每个节点的端口号都发布为宿主机端口，`ingress` 专用于 swarm 集群，所有节点的端口会被负载均衡为宿主机端口。
 
 ```yaml
 ports:
@@ -1792,7 +1637,7 @@ restart: unless-stopped
 下面的例子使用短格式，让 `redis` 能够访问 `my_secret` 和 `my_other_secret`。`my_secret` 的具体内容被定义在 `./my_secret.txt`，`my_other_secret` 被定义为外部资源，例如通过 `docker secret create` 方式预先定义。如果找不到对应的外部资源，stack部署将会失败并抛出一个 `secret not found` 错误。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   redis:
     image: redis:latest
@@ -1820,7 +1665,7 @@ secrets:
 下面是一个例子：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   redis:
     image: redis:latest
@@ -1855,7 +1700,7 @@ security_opt:
 
 通常这和 seccomp 有关，这会是与安全配置有关的一个冗长的话题，故而此处不做展开。
 
-> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。
+> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。（此时可以使用 `restart_policy` 达到目的）
 >
 > 也参阅  [deploying a stack in swarm mode](https://docs.docker.com/engine/reference/commandline/stack_deploy/) 。
 
@@ -1897,7 +1742,7 @@ sysctls:
   - net.ipv4.tcp_syncookies=0
 ```
 
-> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。
+> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。（此时可以使用 `restart_policy` 达到目的）
 >
 > 也参阅  [deploying a stack in swarm mode](https://docs.docker.com/engine/reference/commandline/stack_deploy/) 。
 
@@ -1905,41 +1750,24 @@ sysctls:
 
 ### `tmpfs`
 
-> v2 的解说在 v3.8 的原文里已经被删除了：
+> since v2
 
-> > since v2
->
-> 挂载一个临时文件系统到容器中。可以是一个单一值或一个列表。
->
-> ```yaml
-> tmpfs: /run
-> tmpfs:
->   - /run
->   - /tmp
-> ```
->
-> > **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。
-> >
-> > 也参阅  [deploying a stack in swarm mode](https://docs.docker.com/engine/reference/commandline/stack_deploy/) 。
->
-
-
-
-> since v3.6
-
-挂载一个临时文件系统到容器中。可以使用一个单一值或一个数组。
+挂载一个临时文件系统到容器中。可以是一个单一值或一个列表。
 
 ```yaml
 tmpfs: /run
-
 tmpfs:
   - /run
   - /tmp
 ```
 
-> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。
+> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。（此时可以使用 `restart_policy` 达到目的）
 >
 > 也参阅  [deploying a stack in swarm mode](https://docs.docker.com/engine/reference/commandline/stack_deploy/) 。
+
+
+
+> since v3.6
 
 挂载一个临时文件系统到容器中。Size参数可以指定文件系统尺寸的字节大小。默认值为无限。
 
@@ -1974,7 +1802,7 @@ userns_mode: "host"
 
 禁用用户名字空间。如果 Docker daemon 被配置运行在一个 user namespace 之中的话。
 
-> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。
+> **NOTE**: 这些选项在部署一个栈到 swarm mode 时被忽略。（此时可以使用 `restart_policy` 达到目的）
 >
 > 也参阅  [deploying a stack in swarm mode](https://docs.docker.com/engine/reference/commandline/stack_deploy/) 。
 
@@ -1999,7 +1827,7 @@ userns_mode: "host"
 下面的例子示意了一个命名卷 `my_data` ，且被用于 `web` 服务。在 `web` 中也使用一个主机文件夹 `./static` 到容器内的挂载；在 `db` 中挂载了一个主机文件到容器内的对应文件，并使用了另一个命名卷 `dbdata`。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   web:
     image: nginx:alpine
@@ -2024,17 +1852,13 @@ volumes:
   dbdata:
 ```
 
-> **Note**
->
-> 关于卷的更多信息，请参阅 [use volumes](https://docs.docker.com/storage/volumes/) 和 [volume plugins](https://docs.docker.com/engine/extend/plugins_volume/) 章节。
+
 
 #### 短格式
 
 可以使用 `HOST:CONTAINER` 格式，或者附带一个访问模式 `HOST:CONTAINER:ro`。
 
-短格式的语法为 `[SOURCE:]TARGET[:MODE]`。`SOURCE` 可以是一个主机路径，也可以是一个卷名。`TARGET` 是一个容器内路径 T，主机路径将被挂载到该路径 T。`MODE` 可以是 `ro` 或者 `rw`，分别代表着 只读 和 可读写。
-
-可以挂载一个主机中的相对路径，此路径是相对于 docker compose 文件而被展开的。相对路径应该总是以 `.` 或者 `..` 开始。
+可以挂载一个主机中的相对路径。
 
 ```yaml
 volumes:
@@ -2071,7 +1895,7 @@ volumes:
 - `consistency`：挂载的一致性要求：`consistent` 主机和容器有同样的视图，`cached` 读操作被缓冲，主机视图为主体，`delegated` 读写操作被缓冲，容器视图为主体。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   web:
     image: nginx:alpine
@@ -2094,11 +1918,7 @@ volumes:
   mydata:
 ```
 
-> ~~长格式在 v3.2 之后可用~~
->
-> **Note**
->
-> 在做绑定主机目录并挂载到容器操作时，长格式语法需要你提前将主机文件夹准备就绪。使用短格式的话，对应文件夹将被就地创建，如果它尚未存在的话。详情请参阅 [bind mounts documentation](https://docs.docker.com/storage/bind-mounts/#differences-between--v-and---mount-behavior)。
+> 长格式在 v3.2 之后可用
 
 #### VOLUMES FOR SERVICES, SWARMS, AND STACK FILES
 
@@ -2111,7 +1931,7 @@ volumes:
 作为一个例子，[votingapp sample in Docker Labs](https://github.com/docker/labs/blob/master/beginner/chapters/votingapp.md) 的 `docker-stack.yml` 文件定义了 `db` 服务，运行着 postgresql。它使用了一个命名卷 `db-data` 来持久化数据库数据，这个卷被通过swarm约束在只能运行在 `manager` 这个节点上，因此一切疑难都不存在了。下面是源码：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   db:
     image: postgres:9.4
@@ -2230,7 +2050,7 @@ tty: true
 这里有一个示例，包含了两个服务，数据库的数据存储文件夹在两个服务之间被共享，因而数据库可以使用这个存储文件夹，而备份服务同样可以操作它以完成备份任务：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 
 services:
   db:
@@ -2280,7 +2100,7 @@ volumes:
 下面的示例中，Compose 查找一个名为 `data` 的外部卷并挂载它到 `db` 服务中，而不是尝试创建一个名为 `[projectname]_data` 的新卷。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 
 services:
   db:
@@ -2334,7 +2154,7 @@ labels:
 为卷指定一个自定义的名字。名字的值可被用于解决具有特殊字符名字的卷。注意该值被原样使用，引号不会被忽略，也不会被添加上栈名字前缀。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 volumes:
   data:
     name: my-app-data
@@ -2343,7 +2163,7 @@ volumes:
 `name` 可以被与 `external` 相组合：
 
 ```
-version: "3.8"
+version: "3.7"
 volumes:
   data:
     external: true
@@ -2373,13 +2193,13 @@ driver: overlay
 
 
 
-#### `bridge`
+#### bridge
 
 缺省时 Docker 在每个宿主机节点上使用 `bridge` 驱动。有关桥接网络是如何工作的，可以参考 [Docker Labs](https://github.com/docker/labs/blob/master/README.md) 的和网络相关的辅导用例：[Bridge networking](https://github.com/docker/labs/blob/master/networking/A2-bridge-networking.md)。
 
 
 
-#### `overlay`
+#### overlay
 
 `overlay` 驱动在多个 `swarm mode` 节点之间建立一个命名子网，这是一个跨主机的虚拟网络。
 
@@ -2388,7 +2208,7 @@ driver: overlay
 
 
 
-#### `host` 或 `none`
+#### host or none
 
 使用主机网络栈，或者不使用网络。
 
@@ -2401,7 +2221,7 @@ If you want to use a particular network on a common build, use [network] as ment
 使用内建的网络模型，例如 `host` 和 `none`，语法上有一点点需要注意的地方：如果用 `host` 或 `none` 这样的名字定义一个外部网络（注意你并不需要真的创建他们，这两者都属于Docker内置的网络模型），那么在 Compose 编排文件中引用它们时你需要使用 `hostnet` 或 `nonet`，如同这样：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 services:
   web:
     networks:
@@ -2529,7 +2349,7 @@ labels:
 下面的例子里，`proxy` 是一个外部世界中的网关，Compose将会寻找通过 `docker network create outside` 所建立的 `outside` 外部网络，而不是试图去自动建立一个名为 `[projectname]_outside` 的新网络：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 
 services:
   proxy:
@@ -2560,7 +2380,7 @@ networks:
 为网络设置一个自定义名字。名字的值可被用于解决具有特殊字符名字的卷。注意该值被原样使用，引号不会被忽略，也不会被添加上栈名字前缀。
 
 ```yaml
-version: "3.8"
+version: "3.7"
 networks:
   network1:
     name: my-app-net
@@ -2569,7 +2389,7 @@ networks:
 `name` 可以与 `external` 一起连用：
 
 ```yaml
-version: "3.8"
+version: "3.7"
 networks:
   network1:
     external: true
@@ -2589,8 +2409,6 @@ networks:
 - `file`: 配置项的内容在一个宿主机文件中。
 - `external`: 如果设置为 `true`，表示该配置项已经创建就绪了。Docker将不会试图建立它，而是在起不存在时生成一个 `config not found` 错误。
 - `name`: 该配置项在 Docker 中的名字。名字的值可被用于解决具有特殊字符名字的卷。注意该值被原样使用，引号不会被忽略，也不会被添加上栈名字前缀。
-- `driver` and `driver_opts`: The name of a custom secret driver, and driver-specific options passed as key/value pairs. Introduced in version 3.8 file format, and only supported when using `docker stack`.
-- `template_driver`: The name of the templating driver to use, which controls whether and how to evaluate the secret payload as a template. If no driver is set, no templating is used. The only driver currently supported is `golang`, which uses a `golang`. Introduced in version 3.8 file format, and only supported when using `docker stack`. Refer to [use a templated config](https://docs.docker.com/engine/swarm/configs/#example-use-a-templated-config) for a examples of templated configs.
 
 下面的例子中，当作为栈的一部分被部署时，`my_first_config` 会被自动创建并命名为 `<stack_name>_my_first_config`，至于 `my_second_config` 是已经存在的。
 
@@ -2624,7 +2442,6 @@ configs:
 - `file`: 敏感信息项的内容在一个宿主机文件中。
 - `external`: 如果设置为 `true`，表示该敏感信息项已经创建就绪了。Docker将不会试图建立它，而是在起不存在时生成一个 `secret not found` 错误。
 - `name`: 该敏感信息项在 Docker 中的名字。名字的值可被用于解决具有特殊字符名字的卷。注意该值被原样使用，引号不会被忽略，也不会被添加上栈名字前缀。
-- `template_driver`: The name of the templating driver to use, which controls whether and how to evaluate the secret payload as a template. If no driver is set, no templating is used. The only driver currently supported is `golang`, which uses a `golang`. Introduced in version 3.8 file format, and only supported when using `docker stack`.
 
 下面的例子中，当作为栈的一部分被部署时，`my_first_secret` 会被自动创建并命名为 `<stack_name>_my_first_secret`，至于 `my_second_secret` 是已经存在的。
 
@@ -2745,10 +2562,10 @@ x-custom:
 > ```yaml
 > version: '3.7'
 > services:
-> redis:
->  # ...
-> x-custom:
->  items:
+>   redis:
+>     # ...
+>   x-custom:
+>     items:
 >       - a
 >       - b
 >     options:
@@ -2832,4 +2649,37 @@ volumes:
 
 
 
-## 🔚
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
