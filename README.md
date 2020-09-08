@@ -14,17 +14,25 @@
 
 阅读本文，你应该有 docker-compose 的基本认识，至少有基本的早期（版本2）编排格式的了解。
 
+
+
 ### 关于授权
 
-译文从属于原文 <https://docs.docker.com/compose/compose-file/>。
+原文 <https://docs.docker.com/compose/compose-file/>
 
-[译文 https://github.com/hedzr/docker-compose-file-format](https://github.com/hedzr/docker-compose-file-format) 本身以 MIT 方式（忽略 hedzr.github.io 站台级许可申明，遵循 repo 本身的申明）分发。
+译文从属于原文。
 
-
+译文：https://hedzr.github.io/devops/docker/docker-compose-file-format-v3.8/
+
+GitHub：<https://github.com/hedzr/docker-compose-file-format>
+
+译文 本身以 MIT 方式（忽略 hedzr.github.io 站台级许可申明，遵循 repo 本身的申明）分发。
+
+
 
 ### v3.8 说明
 
-上一次我做了一个旧的译文：[docker-compose 编排指南 (v3.7)](../docker-compose-file-format/)。这是基于 v3.7 的。今次的译文是对其的一个更新。不得不说，这种查漏补缺挺烦人的。
+上一次我做了一个旧的译文：[docker-compose 编排指南 (v3.7)](../docker-compose-file-format/) (@Original: <https://github.com/hedzr/docker-compose-file-format/blob/master/README-v3.7.md>)。这是基于 v3.7 的。今次的译文是对其的一个更新。不得不说，这种查漏补缺挺烦人的。
 
 
 
