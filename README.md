@@ -26,7 +26,7 @@
 
 GitHub：<https://github.com/hedzr/docker-compose-file-format>
 
-译文 本身以 MIT 方式（忽略 hedzr.github.io 站台级许可申明，遵循 repo 本身的申明）分发。
+译文 本身以 MIT 方式（请忽略 hedzr.github.io 站台级 CC4 许可申明，遵循 repo 本身的申明）分发。
 
 
 
@@ -36,164 +36,19 @@ GitHub：<https://github.com/hedzr/docker-compose-file-format>
 
 
 
+### 阅读建议
+
+请在 github pages 处浏览我的博客版本，那里有目录边栏帮助你更好地导航，并且总是会采纳这里的最新版本：
+
+https://hedzr.github.io/devops/docker/docker-compose-file-format-v3.8/
 
 
-## Table of Contents
-
-* [docker\-compose 编排指南 (v3\.8)](#docker-compose-%E7%BC%96%E6%8E%92%E6%8C%87%E5%8D%97-v38)
-  * [缘起](#%E7%BC%98%E8%B5%B7)
-    * [关于授权](#%E5%85%B3%E4%BA%8E%E6%8E%88%E6%9D%83)
-    * [v3\.8 说明](#v38-%E8%AF%B4%E6%98%8E)
-  * [Table of Contents](#table-of-contents)
-  * [编排格式版本3](#%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E7%89%88%E6%9C%AC3)
-    * [历史](#%E5%8E%86%E5%8F%B2)
-  * [特别添加](#%E7%89%B9%E5%88%AB%E6%B7%BB%E5%8A%A0)
-    * [编排文件结构与示例](#%E7%BC%96%E6%8E%92%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A4%BA%E4%BE%8B)
-    * [[Dockerfile] 关于 ENTRYPOINT 和 CMD](#dockerfile-%E5%85%B3%E4%BA%8E-entrypoint-%E5%92%8C-cmd)
-      * [<a href="https://goinbigdata\.com/docker\-run\-vs\-cmd\-vs\-entrypoint/" rel="nofollow"><strong>Docker RUN vs CMD vs ENTRYPOINT \- Go in Big Data</strong></a>](#docker-run-vs-cmd-vs-entrypoint---go-in-big-data)
-        * [In a nutshell](#in-a-nutshell)
-      * [典型用法](#%E5%85%B8%E5%9E%8B%E7%94%A8%E6%B3%95)
-      * [用于你的容器](#%E7%94%A8%E4%BA%8E%E4%BD%A0%E7%9A%84%E5%AE%B9%E5%99%A8)
-    * [[Dockerfile] 多遍构建](#dockerfile-%E5%A4%9A%E9%81%8D%E6%9E%84%E5%BB%BA)
-  * [编排格式手册 \- service 配置参考](#%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---service-%E9%85%8D%E7%BD%AE%E5%8F%82%E8%80%83)
-    * [build](#build)
-      * [context](#context)
-      * [dockerfile](#dockerfile)
-      * [args](#args)
-      * [cache\_from](#cache_from)
-      * [labels](#labels)
-      * [network](#network)
-      * [shm\_size](#shm_size)
-      * [target](#target)
-    * [cap\_add, cap\_drop](#cap_add-cap_drop)
-    * [cgroup\_parent](#cgroup_parent)
-    * [command](#command)
-    * [configs](#configs)
-      * [短格式](#%E7%9F%AD%E6%A0%BC%E5%BC%8F)
-      * [长格式](#%E9%95%BF%E6%A0%BC%E5%BC%8F)
-    * [container\_name](#container_name)
-    * [credential\_spec](#credential_spec)
-      * [gMSA 配置例子](#gmsa-%E9%85%8D%E7%BD%AE%E4%BE%8B%E5%AD%90)
-    * [depends\_on](#depends_on)
-    * [deploy](#deploy)
-      * [endpoint\_mode](#endpoint_mode)
-      * [labels](#labels-1)
-      * [mode](#mode)
-      * [placement](#placement)
-      * [max\_replicas\_per\_node](#max_replicas_per_node)
-      * [replicas](#replicas)
-      * [resources](#resources)
-        * [Out Of Memory Exceptions (OOME)](#out-of-memory-exceptions-oome)
-      * [restart\_policy](#restart_policy)
-      * [rollback\_config](#rollback_config)
-      * [update\_config](#update_config)
-      * [DOCKER STACK DEPLOY 不支持者](#docker-stack-deploy-%E4%B8%8D%E6%94%AF%E6%8C%81%E8%80%85)
-    * [devices](#devices)
-    * [dns](#dns)
-    * [dns\_search](#dns_search)
-    * [entrypoint](#entrypoint)
-    * [env\_file](#env_file)
-    * [environment](#environment)
-    * [expose](#expose)
-    * [external\_links](#external_links)
-    * [extra\_hosts](#extra_hosts)
-    * [healthcheck](#healthcheck)
-    * [image](#image)
-    * [init](#init)
-    * [isolation](#isolation)
-    * [labels](#labels-2)
-    * [links](#links)
-    * [logging](#logging)
-    * [network\_mode](#network_mode)
-    * [networks](#networks)
-      * [ALIASES](#aliases)
-      * [IPV4\_ADDRESS, IPV6\_ADDRESS](#ipv4_address-ipv6_address)
-    * [pid](#pid)
-    * [ports](#ports)
-      * [短格式](#%E7%9F%AD%E6%A0%BC%E5%BC%8F-1)
-      * [长格式](#%E9%95%BF%E6%A0%BC%E5%BC%8F-1)
-    * [restart](#restart)
-    * [secrets](#secrets)
-      * [短格式](#%E7%9F%AD%E6%A0%BC%E5%BC%8F-2)
-      * [长格式](#%E9%95%BF%E6%A0%BC%E5%BC%8F-2)
-    * [security\_opt](#security_opt)
-    * [stop\_grace\_period](#stop_grace_period)
-    * [stop\_signal](#stop_signal)
-    * [sysctls](#sysctls)
-    * [tmpfs](#tmpfs)
-    * [ulimits](#ulimits)
-    * [userns\_mode](#userns_mode)
-    * [volumes](#volumes)
-      * [短格式](#%E7%9F%AD%E6%A0%BC%E5%BC%8F-3)
-      * [长格式](#%E9%95%BF%E6%A0%BC%E5%BC%8F-3)
-      * [VOLUMES FOR SERVICES, SWARMS, AND STACK FILES](#volumes-for-services-swarms-and-stack-files)
-      * [CACHING OPTIONS FOR VOLUME MOUNTS (DOCKER DESKTOP FOR MAC)](#caching-options-for-volume-mounts-docker-desktop-for-mac)
-    * [domainname, hostname, ipc, mac\_address, privileged, read\_only, shm\_size, stdin\_open, tty, user, working\_dir](#domainname-hostname-ipc-mac_address-privileged-read_only-shm_size-stdin_open-tty-user-working_dir)
-  * [指定时间段 duration](#%E6%8C%87%E5%AE%9A%E6%97%B6%E9%97%B4%E6%AE%B5-duration)
-  * [指定字节值](#%E6%8C%87%E5%AE%9A%E5%AD%97%E8%8A%82%E5%80%BC)
-  * [卷编排格式手册 \- volumes](#%E5%8D%B7%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---volumes)
-    * [driver](#driver)
-    * [driver\_opts](#driver_opts)
-    * [external](#external)
-    * [labels](#labels-3)
-    * [name](#name)
-  * [网络编排格式手册 \- networks](#%E7%BD%91%E7%BB%9C%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---networks)
-    * [driver](#driver-1)
-      * [bridge](#bridge)
-      * [overlay](#overlay)
-      * [host 或 none](#host-%E6%88%96-none)
-    * [driver\_opts](#driver_opts-1)
-    * [attachable](#attachable)
-    * [enable\_ipv6](#enable_ipv6)
-    * [ipam](#ipam)
-    * [internal](#internal)
-    * [labels](#labels-4)
-    * [external](#external-1)
-    * [name](#name-1)
-  * [配置项编排格式手册 \- configs](#%E9%85%8D%E7%BD%AE%E9%A1%B9%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---configs)
-  * [敏感信息项编排格式手册 \- secrets](#%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E9%A1%B9%E7%BC%96%E6%8E%92%E6%A0%BC%E5%BC%8F%E6%89%8B%E5%86%8C---secrets)
-      * [Compose File v3\.5 及更高版本](#compose-file-v35-%E5%8F%8A%E6%9B%B4%E9%AB%98%E7%89%88%E6%9C%AC)
-    * [Compose File v3\.4 和更低版本](#compose-file-v34-%E5%92%8C%E6%9B%B4%E4%BD%8E%E7%89%88%E6%9C%AC)
-  * [变量替换](#%E5%8F%98%E9%87%8F%E6%9B%BF%E6%8D%A2)
-  * [扩展字段](#%E6%89%A9%E5%B1%95%E5%AD%97%E6%AE%B5)
-  * [Compose 文档参考](#compose-%E6%96%87%E6%A1%A3%E5%8F%82%E8%80%83)
-  * [结束](#%E7%BB%93%E6%9D%9F)
-
-<!-- Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc.go) -->
-
-
-
-## 编排格式版本3
-
-### 历史
-
-版本3是自 docker-engine 1.13 推出以来 docker-compose 所支持的格式。这之前 docker 在 1.12 中推出了 swarm mode 来构建一个虚拟网络中的虚拟计算资源，同时也大幅度改进了 docker 的网络以及存储的支持。
-
-对于 docker-compose 编排格式与 docker-engine 之间的关系，下面这张表（摘自官网）有清晰的对照。
-
-| **Compose file format** | **Docker Engine release** |
-| :---------------------- | :------------------------ |
-| 3.8                     | 19.03.0+                  |
-| 3.7                     | 18.06.0+                  |
-| 3.6                     | 18.02.0+                  |
-| 3.5                     | 17.12.0+                  |
-| 3.4                     | 17.09.0+                  |
-| 3.3                     | 17.06.0+                  |
-| 3.2                     | 17.04.0+                  |
-| 3.1                     | 1.13.1+                   |
-| 3.0                     | 1.13.0+                   |
-| 2.4                     | 17.12.0+                  |
-| 2.3                     | 17.06.0+                  |
-| 2.2                     | 1.13.0+                   |
-| 2.1                     | 1.12.0+                   |
-| 2.0                     | 1.10.0+                   |
-| 1.0                     | 1.9.1.+                   |
 
 
 
 ## 特别添加
 
-### 编排文件结构与示例
+#### 编排文件结构与示例
 
 这是一个版本3+的典型文件结构样本：
 
@@ -304,11 +159,9 @@ volumes:
 
 
 
-### [Dockerfile] 关于 `ENTRYPOINT` 和 `CMD`
+#### [Dockerfile] 关于 `ENTRYPOINT` 和 `CMD`
 
-
-
-#### [**Docker RUN vs CMD vs ENTRYPOINT - Go in Big Data**](https://goinbigdata.com/docker-run-vs-cmd-vs-entrypoint/)
+##### [**Docker RUN vs CMD vs ENTRYPOINT - Go in Big Data**](https://goinbigdata.com/docker-run-vs-cmd-vs-entrypoint/)
 
 ##### In a nutshell
 
@@ -324,7 +177,7 @@ volumes:
 
 
 
-#### 典型用法
+##### 典型用法
 
 所以一个惯用法是：
 
@@ -344,7 +197,7 @@ Hello David
 
 
 
-#### 用于你的容器
+##### 用于你的容器
 
 所以对于自定义容器来说，你的主要应用程序的路径可以被用作 `ENTRYPOINT` 而在 `CMD` 中提供默认参数：
 
@@ -362,37 +215,130 @@ $ docker run -it my-app-container server run --foreground
 [ 等同于执行 my-app server run --foreground ]
 ```
 
-END
-
-
 
 
 
-### [Dockerfile] 多遍构建
 
-
+#### [Dockerfile] 多遍构建
 
 多遍构建被典型地用于CI/CD。
 
 例如步骤0可以被命名为 `builder`，负责从源码编译到目标文件，而步骤1则从步骤0中抽出目标文件用于部署打包，并生成最终的容器镜像，随后步骤0的中间层则被抛弃（仅指不被打包在结果容器中，实际上这些中间层在 Docker 的构建缓存中仍然是存在且可以被重用的），这些中间层不会出现在最终容器镜像中，从而有效地缩减了最终容器镜像的尺寸，而这个结果也是从语义上、从逻辑上被自洽的。
 
-```yaml
-FROM golang:1.7.3 AS builder
-WORKDIR /go/src/github.com/alexellis/href-counter/
-RUN go get -d -v golang.org/x/net/html  
-COPY app.go    .
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+下面有一个 Golang 应用程序的多遍构建实例，尽管它包含了一些与 Docker 构建无关的细节，但作为一个真实世界中的案例，想必能够带给您更充分的展示（源码来自 https://github.com/hedzr/awesome-tool/blob/master/Dockerfile）：
 
-FROM alpine:latest  
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=builder /go/src/github.com/alexellis/href-counter/app .
-CMD ["./app"]  
+```dockerfile
+ARG BASE_BUILD_IMAGE
+FROM ${BASE_BUILD_IMAGE:-golang:1.15} AS builder
+
+ARG VERSION
+ARG W_PKG
+ARG GO111MODULE
+ARG GOPROXY
+ARG CN
+ARG WORKDIR
+ARG APPNAME
+
+# docker build --build-arg CN=1 -t awesome-tool:latest . 
+
+ENV AN=${APPNAME:-awesome-tool}
+ENV WDIR=${WORKDIR:-/var/lib/$AN}
+ENV GIT_REVISION	""
+ENV GOVERSION			"1.15"
+ENV BUILDTIME			""
+ENV LDFLAGS				""
+
+WORKDIR /go/src/github.com/hedzr/$AN/
+COPY    .    .
+RUN ls -ls ./; \
+		W_PKG=${W_PKG:-github.com/hedzr/cmdr/conf}; \
+		GOPROXY=${GOPROXY:-https://goproxy.io,direct}; \
+		V1=$(grep -E "Version[ \t]+=[ \t]+" doc.go|grep -Eo "[0-9.]+"); \
+		VERSION=${VERSION:-$V1}; \
+		GIT_REVISION="$(git rev-parse --short HEAD)"; \
+		GOVERSION="$(go version)"; \
+		BUILDTIME="$(date -u '+%Y-%m-%d_%H-%M-%S')"; \
+		LDFLAGS="-s -w \
+			-X '$W_PKG.Githash=$GIT_REVISION' \
+			-X '$W_PKG.GoVersion=$GOVERSION' \
+			-X '$W_PKG.Buildstamp=$BUILDTIME' \
+			-X '$W_PKG.Version=$VERSION'"; \
+		echo;echo;echo "Using GOPROXY: $GOPROXY";echo "    CN: $CN";echo; \
+		CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo \
+			-ldflags "$LDFLAGS" \
+			-o bin/$AN ./cli && \
+		ls -la bin/
+
+
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE:-alpine:latest}
+
+ARG CN
+ARG VERSION
+ARG WORKDIR
+ARG CONFDIR
+ARG APPNAME
+
+ENV AN=${APPNAME:-awesome-tool}
+ENV WDIR=${WORKDIR:-/var/lib/$AN}
+ENV CDIR=${CONFDIR:-/etc/$AN}
+
+LABEL by="hedzr" \
+			version="$VERSION" \
+			description="awesome-tool a command-line tool to retrieve the stars of all repos in an awesome-list"
+
+COPY --from=builder /go/src/github.com/hedzr/$AN/ci/etc/$AN /etc/$AN
+
+RUN ls -la $CDIR/ $CDIR/conf.d && echo "    CN: $CN"; \
+    [[ "$CN" != "" ]] && { \ 
+      cp /etc/apk/repositories /etc/apk/repositories.bak; \
+      echo "http://mirrors.aliyun.com/alpine/latest-stable/main/" > /etc/apk/repositories; \
+      echo;echo;echo "apk updating...";apk update; }; \
+    apk --no-cache add ca-certificates && \
+    mkdir -p $WDIR/output /var/log/$AN /var/run/$AN && \
+    ls -la $WDIR/output /var/log/$AN /var/run/$AN
+    
+
+VOLUME  [	"$WDIR/output", "$CDIR/conf.d" ]
+WORKDIR $WDIR
+COPY --from=builder /go/src/github.com/hedzr/$AN/bin/$AN .
+RUN echo $WDIR && echo $AN && ls -la $WDIR
+
+ENTRYPOINT [ "./awesome-tool" ]
+CMD [ "--help" ]
 ```
 
-
 
 
+
+
+
+
+## 编排格式版本3
+
+### 历史
+
+版本3是自 docker-engine 1.13 推出以来 docker-compose 所支持的格式。这之前 docker 在 1.12 中推出了 swarm mode 来构建一个虚拟网络中的虚拟计算资源，同时也大幅度改进了 docker 的网络以及存储的支持。
+
+对于 docker-compose 编排格式与 docker-engine 之间的关系，下面这张表（摘自官网）有清晰的对照。
+
+| **Compose file format** | **Docker Engine release** |
+| :---------------------- | :------------------------ |
+| 3.8                     | 19.03.0+                  |
+| 3.7                     | 18.06.0+                  |
+| 3.6                     | 18.02.0+                  |
+| 3.5                     | 17.12.0+                  |
+| 3.4                     | 17.09.0+                  |
+| 3.3                     | 17.06.0+                  |
+| 3.2                     | 17.04.0+                  |
+| 3.1                     | 1.13.1+                   |
+| 3.0                     | 1.13.0+                   |
+| 2.4                     | 17.12.0+                  |
+| 2.3                     | 17.06.0+                  |
+| 2.2                     | 1.13.0+                   |
+| 2.1                     | 1.12.0+                   |
+| 2.0                     | 1.10.0+                   |
+| 1.0                     | 1.9.1.+                   |
 
 
 
