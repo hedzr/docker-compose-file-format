@@ -1,8 +1,16 @@
-# docker-compose 编排指南 (v3.8)
+# ~~docker-compose 编排指南 (v3.8) [ARCHIVED] ~~
 
 
 
+## ARCHIVED
 
+> Docker 发生了很多变化，Docker 公司也是。其中一个变化是：Dockerfile 以及 Docker Compose File 的格式现在一方面停止于 v3.8，一方面重新开始发展。
+>
+> 新的发展从具体的编排格式来讲的确还是沿袭旧格式的，但也确实有些东西已经变了。需要检索新文件格式文档的话，应该去 [Compose Specification repository](https://github.com/compose-spec/compose-spec) 和 [compose-spec.io](https://compose-spec.io/)。
+
+本 repo 现在不再跟随 Docker 的新格式，就此存档。
+
+再见。
 
 ## 缘起
 
